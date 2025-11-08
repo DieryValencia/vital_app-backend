@@ -1,6 +1,5 @@
 package com.vitalapp.vital_app_backend.service;
 
-import java.util.HashSet;
 import java.util.Set;
 
 import org.springframework.security.authentication.AuthenticationManager;
@@ -16,6 +15,7 @@ import com.vitalapp.vital_app_backend.dto.auth.AuthResponseDTO;
 import com.vitalapp.vital_app_backend.dto.auth.LoginRequestDTO;
 import com.vitalapp.vital_app_backend.dto.auth.RefreshTokenRequestDTO;
 import com.vitalapp.vital_app_backend.dto.auth.RegisterRequestDTO;
+import com.vitalapp.vital_app_backend.model.Role;
 import com.vitalapp.vital_app_backend.model.User;
 import com.vitalapp.vital_app_backend.repository.UserRepository;
 
@@ -46,12 +46,13 @@ public class AuthService {
             roles = Set.of("ROLE_USER");
         }
 
-        User user = new User();
-        user.setUsername(request.getUsername());
-        user.setEmail(request.getEmail());
-        user.setPassword(passwordEncoder.encode(request.getPassword()));
-        user.setRoles(new HashSet<>(roles));
-        user.setActive(true);
+        User user = User.builder()
+                .username(request.getUsername())
+                .email(request.getEmail())
+                .password(passwordEncoder.encode(request.getPassword()))
+                .role(Role.USER)
+                .active(true)
+                .build();
 
         userRepository.save(user);
 
@@ -66,7 +67,7 @@ public class AuthService {
                 .id(user.getId())
                 .username(user.getUsername())
                 .email(user.getEmail())
-                .roles(user.getRoles())
+                .roles(Set.of("ROLE_" + user.getRole().name()))
                 .build();
     }
 
@@ -89,7 +90,7 @@ public class AuthService {
                 .id(user.getId())
                 .username(user.getUsername())
                 .email(user.getEmail())
-                .roles(user.getRoles())
+                .roles(Set.of("ROLE_" + user.getRole().name()))
                 .build();
     }
 
@@ -113,7 +114,7 @@ public class AuthService {
                         .id(user.getId())
                         .username(user.getUsername())
                         .email(user.getEmail())
-                        .roles(user.getRoles())
+                        .roles(Set.of("ROLE_" + user.getRole().name()))
                         .build();
             }
         }
