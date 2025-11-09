@@ -1,103 +1,223 @@
 package com.vitalapp.vital_app_backend.controller;
 
-import java.util.List;
-
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.DeleteMapping;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.PutMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
-
-import com.vitalapp.vital_app_backend.dto.triage.TriageCreateDTO;
-import com.vitalapp.vital_app_backend.dto.triage.TriageResponseDTO;
-import com.vitalapp.vital_app_backend.dto.triage.TriageUpdateDTO;
+import com.vitalapp.vital_app_backend.dto.triage.*;
 import com.vitalapp.vital_app_backend.model.TriageStatus;
 import com.vitalapp.vital_app_backend.service.TriageService;
-
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.media.Schema;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import io.swagger.v3.oas.annotations.security.SecurityRequirement;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
+import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
 
 @RestController
 @RequestMapping("/api/triages")
+@RequiredArgsConstructor
+@Tag(name = "Triages", description = "Gestión de triajes médicos")
+@SecurityRequirement(name = "Bearer Authentication")
 public class TriageController {
 
-    @Autowired
-    private TriageService triageService;
+    private final TriageService triageService;
 
-    /**
-     * GET /api/triages - Obtener todos los triages
-     */
+    @Operation(
+        summary = "Obtener todos los triajes",
+        description = "Retorna la lista completa de triajes médicos registrados en el sistema"
+    )
+    @ApiResponses(value = {
+        @ApiResponse(
+            responseCode = "200",
+            description = "Lista de triajes obtenida exitosamente"
+        ),
+        @ApiResponse(
+            responseCode = "401",
+            description = "No autenticado - Token requerido"
+        )
+    })
     @GetMapping
     public ResponseEntity<List<TriageResponseDTO>> getAllTriages() {
         List<TriageResponseDTO> triages = triageService.getAllTriages();
         return ResponseEntity.ok(triages);
     }
 
-    /**
-     * GET /api/triages/{id} - Obtener triage por ID
-     */
+    @Operation(
+        summary = "Obtener triaje por ID",
+        description = "Retorna la información detallada de un triaje específico"
+    )
+    @ApiResponses(value = {
+        @ApiResponse(
+            responseCode = "200",
+            description = "Triaje encontrado",
+            content = @Content(schema = @Schema(implementation = TriageResponseDTO.class))
+        ),
+        @ApiResponse(
+            responseCode = "404",
+            description = "Triaje no encontrado"
+        ),
+        @ApiResponse(
+            responseCode = "401",
+            description = "No autenticado"
+        )
+    })
     @GetMapping("/{id}")
-    public ResponseEntity<TriageResponseDTO> getTriageById(@PathVariable Long id) {
+    public ResponseEntity<TriageResponseDTO> getTriageById(
+        @Parameter(description = "ID del triaje", example = "1")
+        @PathVariable Long id
+    ) {
         TriageResponseDTO triage = triageService.getTriageById(id);
         return ResponseEntity.ok(triage);
     }
 
-    /**
-     * GET /api/triages/patient/{patientId} - Obtener triages por paciente
-     */
+    @Operation(
+        summary = "Obtener triajes por paciente",
+        description = "Retorna todos los triajes asociados a un paciente específico"
+    )
+    @ApiResponses(value = {
+        @ApiResponse(
+            responseCode = "200",
+            description = "Triajes del paciente obtenidos exitosamente"
+        ),
+        @ApiResponse(
+            responseCode = "401",
+            description = "No autenticado"
+        )
+    })
     @GetMapping("/patient/{patientId}")
-    public ResponseEntity<List<TriageResponseDTO>> getTriagesByPatient(@PathVariable Long patientId) {
+    public ResponseEntity<List<TriageResponseDTO>> getTriagesByPatient(
+        @Parameter(description = "ID del paciente", example = "1")
+        @PathVariable Long patientId
+    ) {
         List<TriageResponseDTO> triages = triageService.getTriagesByPatient(patientId);
         return ResponseEntity.ok(triages);
     }
 
-    /**
-     * GET /api/triages/status/{status} - Obtener triages por estado
-     */
+    @Operation(
+        summary = "Obtener triajes por estado",
+        description = "Retorna todos los triajes que tienen un estado específico"
+    )
+    @ApiResponses(value = {
+        @ApiResponse(
+            responseCode = "200",
+            description = "Triajes por estado obtenidos exitosamente"
+        ),
+        @ApiResponse(
+            responseCode = "401",
+            description = "No autenticado"
+        )
+    })
     @GetMapping("/status/{status}")
-    public ResponseEntity<List<TriageResponseDTO>> getTriagesByStatus(@PathVariable TriageStatus status) {
+    public ResponseEntity<List<TriageResponseDTO>> getTriagesByStatus(
+        @Parameter(description = "Estado del triaje", example = "PENDING")
+        @PathVariable TriageStatus status
+    ) {
         List<TriageResponseDTO> triages = triageService.getTriagesByStatus(status);
         return ResponseEntity.ok(triages);
     }
 
-    /**
-     * POST /api/triages - Crear nuevo triage
-     */
+    @Operation(
+        summary = "Crear nuevo triaje",
+        description = "Registra un nuevo triaje médico en el sistema"
+    )
+    @ApiResponses(value = {
+        @ApiResponse(
+            responseCode = "201",
+            description = "Triaje creado exitosamente",
+            content = @Content(schema = @Schema(implementation = TriageResponseDTO.class))
+        ),
+        @ApiResponse(
+            responseCode = "400",
+            description = "Datos inválidos"
+        ),
+        @ApiResponse(
+            responseCode = "401",
+            description = "No autenticado"
+        )
+    })
     @PostMapping
-    public ResponseEntity<TriageResponseDTO> createTriage(@Valid @RequestBody TriageCreateDTO dto) {
+    public ResponseEntity<TriageResponseDTO> createTriage(
+        @io.swagger.v3.oas.annotations.parameters.RequestBody(
+            description = "Datos del triaje a crear",
+            required = true,
+            content = @Content(schema = @Schema(implementation = TriageCreateDTO.class))
+        )
+        @Valid @RequestBody TriageCreateDTO dto
+    ) {
         TriageResponseDTO createdTriage = triageService.createTriage(dto);
         return ResponseEntity.status(HttpStatus.CREATED).body(createdTriage);
     }
 
-    /**
-     * PUT /api/triages/{id} - Actualizar triage
-     */
+    @Operation(
+        summary = "Actualizar triaje",
+        description = "Actualiza la información de un triaje existente"
+    )
+    @ApiResponses(value = {
+        @ApiResponse(
+            responseCode = "200",
+            description = "Triaje actualizado exitosamente"
+        ),
+        @ApiResponse(
+            responseCode = "404",
+            description = "Triaje no encontrado"
+        ),
+        @ApiResponse(
+            responseCode = "400",
+            description = "Datos inválidos"
+        )
+    })
     @PutMapping("/{id}")
-    public ResponseEntity<TriageResponseDTO> updateTriage(@PathVariable Long id, @Valid @RequestBody TriageUpdateDTO dto) {
+    public ResponseEntity<TriageResponseDTO> updateTriage(
+        @Parameter(description = "ID del triaje") @PathVariable Long id,
+        @Valid @RequestBody TriageUpdateDTO dto
+    ) {
         TriageResponseDTO updatedTriage = triageService.updateTriage(id, dto);
         return ResponseEntity.ok(updatedTriage);
     }
 
-    /**
-     * PUT /api/triages/{id}/status - Actualizar estado del triage
-     */
+    @Operation(
+        summary = "Actualizar estado del triaje",
+        description = "Cambia el estado de un triaje médico"
+    )
+    @ApiResponses(value = {
+        @ApiResponse(
+            responseCode = "200",
+            description = "Estado del triaje actualizado exitosamente"
+        ),
+        @ApiResponse(
+            responseCode = "404",
+            description = "Triaje no encontrado"
+        )
+    })
     @PutMapping("/{id}/status")
-    public ResponseEntity<TriageResponseDTO> updateTriageStatus(@PathVariable Long id, @RequestParam TriageStatus status) {
+    public ResponseEntity<TriageResponseDTO> updateTriageStatus(
+        @Parameter(description = "ID del triaje") @PathVariable Long id,
+        @Parameter(description = "Nuevo estado del triaje", example = "IN_PROGRESS")
+        @RequestParam TriageStatus status
+    ) {
         TriageResponseDTO updatedTriage = triageService.updateTriageStatus(id, status);
         return ResponseEntity.ok(updatedTriage);
     }
 
-    /**
-     * DELETE /api/triages/{id} - Eliminar triage
-     */
+    @Operation(
+        summary = "Eliminar triaje",
+        description = "Elimina un triaje del sistema (eliminación permanente)"
+    )
+    @ApiResponses(value = {
+        @ApiResponse(responseCode = "204", description = "Triaje eliminado"),
+        @ApiResponse(responseCode = "404", description = "Triaje no encontrado")
+    })
     @DeleteMapping("/{id}")
-    public ResponseEntity<Void> deleteTriage(@PathVariable Long id) {
+    public ResponseEntity<Void> deleteTriage(
+        @Parameter(description = "ID del triaje", example = "1")
+        @PathVariable Long id
+    ) {
         triageService.deleteTriage(id);
         return ResponseEntity.noContent().build();
     }

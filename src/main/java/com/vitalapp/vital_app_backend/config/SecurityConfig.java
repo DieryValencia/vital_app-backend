@@ -25,8 +25,18 @@ public class SecurityConfig {
         http
             .csrf(AbstractHttpConfigurer::disable)
             .authorizeHttpRequests(auth -> auth
+                // Endpoints públicos de autenticación
                 .requestMatchers("/api/auth/**").permitAll()
-                .requestMatchers("/swagger-ui/**", "/v3/api-docs/**").permitAll()
+
+                // Swagger UI y OpenAPI docs (públicos)
+                .requestMatchers(
+                    "/swagger-ui/**",
+                    "/v3/api-docs/**",
+                    "/swagger-ui.html",
+                    "/api-docs/**"
+                ).permitAll()
+
+                // Todos los demás endpoints requieren autenticación
                 .anyRequest().authenticated()
             )
             .sessionManagement(session ->

@@ -1,126 +1,285 @@
 package com.vitalapp.vital_app_backend.controller;
 
-import java.util.List;
-
-import org.springframework.beans.factory.annotation.Autowired;
+import com.vitalapp.vital_app_backend.dto.notification.*;
+import com.vitalapp.vital_app_backend.service.NotificationService;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.media.Schema;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import io.swagger.v3.oas.annotations.security.SecurityRequirement;
+import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.validation.Valid;
+import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.DeleteMapping;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.PutMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
-import com.vitalapp.vital_app_backend.dto.notification.NotificationCreateDTO;
-import com.vitalapp.vital_app_backend.dto.notification.NotificationResponseDTO;
-import com.vitalapp.vital_app_backend.dto.notification.NotificationUpdateDTO;
-import com.vitalapp.vital_app_backend.service.NotificationService;
-
-import jakarta.validation.Valid;
+import java.util.List;
 
 @RestController
 @RequestMapping("/api/notifications")
+@RequiredArgsConstructor
+@Tag(name = "Notifications", description = "Gestión de notificaciones del sistema")
+@SecurityRequirement(name = "Bearer Authentication")
 public class NotificationController {
 
-    @Autowired
-    private NotificationService notificationService;
+    private final NotificationService notificationService;
 
-    /**
-     * GET /api/notifications - Obtener todas las notificaciones
-     */
+    @Operation(
+        summary = "Obtener todas las notificaciones",
+        description = "Retorna la lista completa de notificaciones del sistema"
+    )
+    @ApiResponses(value = {
+        @ApiResponse(
+            responseCode = "200",
+            description = "Lista de notificaciones obtenida exitosamente"
+        ),
+        @ApiResponse(
+            responseCode = "401",
+            description = "No autenticado - Token requerido"
+        )
+    })
     @GetMapping
     public ResponseEntity<List<NotificationResponseDTO>> getAllNotifications() {
         List<NotificationResponseDTO> notifications = notificationService.getAllNotifications();
         return ResponseEntity.ok(notifications);
     }
 
-    /**
-     * GET /api/notifications/{id} - Obtener notificación por ID
-     */
+    @Operation(
+        summary = "Obtener notificación por ID",
+        description = "Retorna la información detallada de una notificación específica"
+    )
+    @ApiResponses(value = {
+        @ApiResponse(
+            responseCode = "200",
+            description = "Notificación encontrada",
+            content = @Content(schema = @Schema(implementation = NotificationResponseDTO.class))
+        ),
+        @ApiResponse(
+            responseCode = "404",
+            description = "Notificación no encontrada"
+        ),
+        @ApiResponse(
+            responseCode = "401",
+            description = "No autenticado"
+        )
+    })
     @GetMapping("/{id}")
-    public ResponseEntity<NotificationResponseDTO> getNotificationById(@PathVariable Long id) {
+    public ResponseEntity<NotificationResponseDTO> getNotificationById(
+        @Parameter(description = "ID de la notificación", example = "1")
+        @PathVariable Long id
+    ) {
         NotificationResponseDTO notification = notificationService.getNotificationById(id);
         return ResponseEntity.ok(notification);
     }
 
-    /**
-     * GET /api/notifications/recipient/{recipientId} - Obtener notificaciones por destinatario
-     */
+    @Operation(
+        summary = "Obtener notificaciones por destinatario",
+        description = "Retorna todas las notificaciones enviadas a un usuario específico"
+    )
+    @ApiResponses(value = {
+        @ApiResponse(
+            responseCode = "200",
+            description = "Notificaciones del destinatario obtenidas exitosamente"
+        ),
+        @ApiResponse(
+            responseCode = "401",
+            description = "No autenticado"
+        )
+    })
     @GetMapping("/recipient/{recipientId}")
-    public ResponseEntity<List<NotificationResponseDTO>> getNotificationsByRecipient(@PathVariable Long recipientId) {
+    public ResponseEntity<List<NotificationResponseDTO>> getNotificationsByRecipient(
+        @Parameter(description = "ID del destinatario", example = "1")
+        @PathVariable Long recipientId
+    ) {
         List<NotificationResponseDTO> notifications = notificationService.getNotificationsByRecipient(recipientId);
         return ResponseEntity.ok(notifications);
     }
 
-    /**
-     * GET /api/notifications/recipient/{recipientId}/unread - Obtener notificaciones no leídas
-     */
+    @Operation(
+        summary = "Obtener notificaciones no leídas",
+        description = "Retorna las notificaciones no leídas de un usuario específico"
+    )
+    @ApiResponses(value = {
+        @ApiResponse(
+            responseCode = "200",
+            description = "Notificaciones no leídas obtenidas exitosamente"
+        ),
+        @ApiResponse(
+            responseCode = "401",
+            description = "No autenticado"
+        )
+    })
     @GetMapping("/recipient/{recipientId}/unread")
-    public ResponseEntity<List<NotificationResponseDTO>> getUnreadNotifications(@PathVariable Long recipientId) {
+    public ResponseEntity<List<NotificationResponseDTO>> getUnreadNotifications(
+        @Parameter(description = "ID del destinatario", example = "1")
+        @PathVariable Long recipientId
+    ) {
         List<NotificationResponseDTO> notifications = notificationService.getUnreadNotifications(recipientId);
         return ResponseEntity.ok(notifications);
     }
 
-    /**
-     * GET /api/notifications/recipient/{recipientId}/unread/count - Obtener conteo de no leídas
-     */
+    @Operation(
+        summary = "Obtener conteo de notificaciones no leídas",
+        description = "Retorna el número de notificaciones no leídas de un usuario"
+    )
+    @ApiResponses(value = {
+        @ApiResponse(
+            responseCode = "200",
+            description = "Conteo obtenido exitosamente"
+        ),
+        @ApiResponse(
+            responseCode = "401",
+            description = "No autenticado"
+        )
+    })
     @GetMapping("/recipient/{recipientId}/unread/count")
-    public ResponseEntity<Long> getUnreadCount(@PathVariable Long recipientId) {
+    public ResponseEntity<Long> getUnreadCount(
+        @Parameter(description = "ID del destinatario", example = "1")
+        @PathVariable Long recipientId
+    ) {
         long count = notificationService.getUnreadCount(recipientId);
         return ResponseEntity.ok(count);
     }
 
-    /**
-     * POST /api/notifications - Crear nueva notificación
-     */
+    @Operation(
+        summary = "Crear nueva notificación",
+        description = "Registra una nueva notificación en el sistema"
+    )
+    @ApiResponses(value = {
+        @ApiResponse(
+            responseCode = "201",
+            description = "Notificación creada exitosamente",
+            content = @Content(schema = @Schema(implementation = NotificationResponseDTO.class))
+        ),
+        @ApiResponse(
+            responseCode = "400",
+            description = "Datos inválidos"
+        ),
+        @ApiResponse(
+            responseCode = "401",
+            description = "No autenticado"
+        )
+    })
     @PostMapping
-    public ResponseEntity<NotificationResponseDTO> createNotification(@Valid @RequestBody NotificationCreateDTO dto) {
+    public ResponseEntity<NotificationResponseDTO> createNotification(
+        @io.swagger.v3.oas.annotations.parameters.RequestBody(
+            description = "Datos de la notificación a crear",
+            required = true,
+            content = @Content(schema = @Schema(implementation = NotificationCreateDTO.class))
+        )
+        @Valid @RequestBody NotificationCreateDTO dto
+    ) {
         NotificationResponseDTO createdNotification = notificationService.createNotification(dto);
         return ResponseEntity.status(HttpStatus.CREATED).body(createdNotification);
     }
 
-    /**
-     * PUT /api/notifications/{id} - Actualizar notificación
-     */
+    @Operation(
+        summary = "Actualizar notificación",
+        description = "Actualiza la información de una notificación existente"
+    )
+    @ApiResponses(value = {
+        @ApiResponse(
+            responseCode = "200",
+            description = "Notificación actualizada exitosamente"
+        ),
+        @ApiResponse(
+            responseCode = "404",
+            description = "Notificación no encontrada"
+        ),
+        @ApiResponse(
+            responseCode = "400",
+            description = "Datos inválidos"
+        )
+    })
     @PutMapping("/{id}")
-    public ResponseEntity<NotificationResponseDTO> updateNotification(@PathVariable Long id, @Valid @RequestBody NotificationUpdateDTO dto) {
+    public ResponseEntity<NotificationResponseDTO> updateNotification(
+        @Parameter(description = "ID de la notificación") @PathVariable Long id,
+        @Valid @RequestBody NotificationUpdateDTO dto
+    ) {
         NotificationResponseDTO updatedNotification = notificationService.updateNotification(id, dto);
         return ResponseEntity.ok(updatedNotification);
     }
 
-    /**
-     * PUT /api/notifications/{id}/read - Marcar como leída
-     */
+    @Operation(
+        summary = "Marcar notificación como leída",
+        description = "Cambia el estado de una notificación a leída"
+    )
+    @ApiResponses(value = {
+        @ApiResponse(
+            responseCode = "200",
+            description = "Notificación marcada como leída"
+        ),
+        @ApiResponse(
+            responseCode = "404",
+            description = "Notificación no encontrada"
+        )
+    })
     @PutMapping("/{id}/read")
-    public ResponseEntity<NotificationResponseDTO> markAsRead(@PathVariable Long id) {
+    public ResponseEntity<NotificationResponseDTO> markAsRead(
+        @Parameter(description = "ID de la notificación", example = "1")
+        @PathVariable Long id
+    ) {
         NotificationResponseDTO updatedNotification = notificationService.markAsRead(id);
         return ResponseEntity.ok(updatedNotification);
     }
 
-    /**
-     * PUT /api/notifications/recipient/{recipientId}/read-all - Marcar todas como leídas
-     */
+    @Operation(
+        summary = "Marcar todas las notificaciones como leídas",
+        description = "Cambia el estado de todas las notificaciones de un usuario a leídas"
+    )
+    @ApiResponses(value = {
+        @ApiResponse(
+            responseCode = "200",
+            description = "Todas las notificaciones marcadas como leídas"
+        ),
+        @ApiResponse(
+            responseCode = "401",
+            description = "No autenticado"
+        )
+    })
     @PutMapping("/recipient/{recipientId}/read-all")
-    public ResponseEntity<Void> markAllAsRead(@PathVariable Long recipientId) {
+    public ResponseEntity<Void> markAllAsRead(
+        @Parameter(description = "ID del destinatario", example = "1")
+        @PathVariable Long recipientId
+    ) {
         notificationService.markAllAsRead(recipientId);
         return ResponseEntity.ok().build();
     }
 
-    /**
-     * DELETE /api/notifications/{id} - Eliminar notificación
-     */
+    @Operation(
+        summary = "Eliminar notificación",
+        description = "Elimina una notificación del sistema (eliminación permanente)"
+    )
+    @ApiResponses(value = {
+        @ApiResponse(responseCode = "204", description = "Notificación eliminada"),
+        @ApiResponse(responseCode = "404", description = "Notificación no encontrada")
+    })
     @DeleteMapping("/{id}")
-    public ResponseEntity<Void> deleteNotification(@PathVariable Long id) {
+    public ResponseEntity<Void> deleteNotification(
+        @Parameter(description = "ID de la notificación", example = "1")
+        @PathVariable Long id
+    ) {
         notificationService.deleteNotification(id);
         return ResponseEntity.noContent().build();
     }
 
-    /**
-     * DELETE /api/notifications/expired - Eliminar notificaciones expiradas
-     */
+    @Operation(
+        summary = "Eliminar notificaciones expiradas",
+        description = "Elimina todas las notificaciones que han expirado"
+    )
+    @ApiResponses(value = {
+        @ApiResponse(
+            responseCode = "200",
+            description = "Notificaciones expiradas eliminadas"
+        ),
+        @ApiResponse(
+            responseCode = "401",
+            description = "No autenticado"
+        )
+    })
     @DeleteMapping("/expired")
     public ResponseEntity<Void> deleteExpiredNotifications() {
         notificationService.deleteExpiredNotifications();
