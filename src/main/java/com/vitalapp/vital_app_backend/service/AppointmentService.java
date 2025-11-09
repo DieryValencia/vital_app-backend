@@ -5,12 +5,15 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.vitalapp.vital_app_backend.dto.appointment.AppointmentCreateDTO;
 import com.vitalapp.vital_app_backend.dto.appointment.AppointmentResponseDTO;
 import com.vitalapp.vital_app_backend.dto.appointment.AppointmentUpdateDTO;
+import com.vitalapp.vital_app_backend.event.AppointmentCreatedEvent;
+import com.vitalapp.vital_app_backend.event.AppointmentStatusChangedEvent;
 import com.vitalapp.vital_app_backend.mapper.AppointmentMapper;
 import com.vitalapp.vital_app_backend.model.Appointment;
 import com.vitalapp.vital_app_backend.model.AppointmentStatus;
@@ -31,6 +34,9 @@ public class AppointmentService {
     @Autowired
     private AppointmentMapper appointmentMapper;
 
+    @Autowired
+    private ApplicationEventPublisher eventPublisher;
+
     /**
      * Crea una nueva cita
      */
@@ -43,6 +49,10 @@ public class AppointmentService {
         appointment.setStatus(AppointmentStatus.SCHEDULED);
 
         Appointment savedAppointment = appointmentRepository.save(appointment);
+
+        // Publicar evento de creación
+        eventPublisher.publishEvent(new AppointmentCreatedEvent(savedAppointment));
+
         return appointmentMapper.toResponseDTO(savedAppointment);
     }
 
@@ -125,8 +135,15 @@ public class AppointmentService {
         Appointment appointment = appointmentRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Cita no encontrada con ID: " + id));
 
+        AppointmentStatus oldStatus = appointment.getStatus();
         appointment.setStatus(status);
         Appointment updatedAppointment = appointmentRepository.save(appointment);
+
+        // Publicar evento de cambio de status
+        eventPublisher.publishEvent(
+            new AppointmentStatusChangedEvent(updatedAppointment, oldStatus, status)
+        );
+
         return appointmentMapper.toResponseDTO(updatedAppointment);
     }
 

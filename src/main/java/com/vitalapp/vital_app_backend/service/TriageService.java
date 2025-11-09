@@ -4,12 +4,14 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.vitalapp.vital_app_backend.dto.triage.TriageCreateDTO;
 import com.vitalapp.vital_app_backend.dto.triage.TriageResponseDTO;
 import com.vitalapp.vital_app_backend.dto.triage.TriageUpdateDTO;
+import com.vitalapp.vital_app_backend.event.TriageCreatedEvent;
 import com.vitalapp.vital_app_backend.mapper.TriageMapper;
 import com.vitalapp.vital_app_backend.model.Patient;
 import com.vitalapp.vital_app_backend.model.Triage;
@@ -35,6 +37,9 @@ public class TriageService {
     @Autowired
     private TriageMapper triageMapper;
 
+    @Autowired
+    private ApplicationEventPublisher eventPublisher;
+
     /**
      * Crea un nuevo triage
      */
@@ -47,6 +52,10 @@ public class TriageService {
         triage.setStatus(TriageStatus.PENDING);
 
         Triage savedTriage = triageRepository.save(triage);
+
+        // Publicar evento
+        eventPublisher.publishEvent(new TriageCreatedEvent(savedTriage));
+
         return triageMapper.toResponseDTO(savedTriage);
     }
 

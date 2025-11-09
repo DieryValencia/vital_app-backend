@@ -154,4 +154,11 @@ public class NotificationService {
             notificationRepository.deleteAll(expiredNotifications);
         }
     }
+
+    /**
+     * Guarda una notificación directamente (para uso interno de listeners)
+     */
+    public Notification saveNotification(Notification notification) {
+        return notificationRepository.save(notification);
+    }
 }
