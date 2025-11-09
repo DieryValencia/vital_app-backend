@@ -1,8 +1,10 @@
 package com.vitalapp.vital_app_backend.controller;
 
+import java.time.LocalDate;
 import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -16,9 +18,11 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.vitalapp.vital_app_backend.dto.common.PageResponseDTO;
 import com.vitalapp.vital_app_backend.dto.patient.PatientCreateDTO;
 import com.vitalapp.vital_app_backend.dto.patient.PatientResponseDTO;
 import com.vitalapp.vital_app_backend.dto.patient.PatientUpdateDTO;
+import com.vitalapp.vital_app_backend.model.Gender;
 import com.vitalapp.vital_app_backend.service.PatientService;
 
 import jakarta.validation.Valid;
@@ -31,11 +35,34 @@ public class PatientController {
     private PatientService patientService;
 
     /**
-     * GET /api/patients - Obtener todos los pacientes
+     * Lista todos los pacientes con paginación, ordenamiento y filtros
+     *
+     * Ejemplos:
+     * GET /api/patients?page=0&size=10
+     * GET /api/patients?fullName=Juan&page=0&size=20
+     * GET /api/patients?sortBy=fullName&sortDirection=ASC
+     * GET /api/patients?gender=MALE&active=true
      */
     @GetMapping
-    public ResponseEntity<List<PatientResponseDTO>> getAllPatients() {
-        List<PatientResponseDTO> patients = patientService.getAllPatients();
+    public ResponseEntity<PageResponseDTO<PatientResponseDTO>> getAllPatients(
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size,
+            @RequestParam(defaultValue = "id") String sortBy,
+            @RequestParam(defaultValue = "ASC") String sortDirection,
+            @RequestParam(required = false) String fullName,
+            @RequestParam(required = false) String documentNumber,
+            @RequestParam(required = false) String phone,
+            @RequestParam(required = false) Gender gender,
+            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate birthDateFrom,
+            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate birthDateTo,
+            @RequestParam(required = false) Boolean active) {
+
+        PageResponseDTO<PatientResponseDTO> patients = patientService.getAllPatients(
+            page, size, sortBy, sortDirection,
+            fullName, documentNumber, phone, gender,
+            birthDateFrom, birthDateTo, active
+        );
+
         return ResponseEntity.ok(patients);
     }
 
