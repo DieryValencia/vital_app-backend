@@ -84,14 +84,14 @@ public class GlobalExceptionHandler {
 
         ErrorResponse response = new ErrorResponse();
         response.setTimestamp(LocalDateTime.now());
-        response.setStatus(HttpStatus.UNPROCESSABLE_ENTITY.value());
+        response.setStatus(HttpStatus.BAD_REQUEST.value());
         response.setError("Business Error");
         response.setMessage(ex.getMessage());
         response.setPath(request.getRequestURI());
 
         log.warn("Business error: {}", ex.getMessage());
 
-        return ResponseEntity.status(HttpStatus.UNPROCESSABLE_ENTITY).body(response);
+        return ResponseEntity.badRequest().body(response);
     }
 
     @ExceptionHandler(UnauthorizedException.class)

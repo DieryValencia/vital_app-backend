@@ -10,6 +10,8 @@ import org.springframework.transaction.annotation.Transactional;
 import com.vitalapp.vital_app_backend.dto.patient.PatientCreateDTO;
 import com.vitalapp.vital_app_backend.dto.patient.PatientResponseDTO;
 import com.vitalapp.vital_app_backend.dto.patient.PatientUpdateDTO;
+import com.vitalapp.vital_app_backend.exception.custom.ResourceNotFoundException;
+import com.vitalapp.vital_app_backend.exception.custom.DuplicateResourceException;
 import com.vitalapp.vital_app_backend.mapper.PatientMapper;
 import com.vitalapp.vital_app_backend.model.Patient;
 import com.vitalapp.vital_app_backend.repository.PatientRepository;
@@ -29,7 +31,7 @@ public class PatientService {
      */
     public PatientResponseDTO createPatient(PatientCreateDTO dto) {
         if (patientRepository.existsByDocumentNumber(dto.getDocumentNumber())) {
-            throw new RuntimeException("Ya existe un paciente con el documento: " + dto.getDocumentNumber());
+            throw new DuplicateResourceException("Ya existe un paciente con el documento: " + dto.getDocumentNumber());
         }
 
         Patient patient = patientMapper.toEntity(dto);
@@ -63,7 +65,7 @@ public class PatientService {
     @Transactional(readOnly = true)
     public PatientResponseDTO getPatientById(Long id) {
         Patient patient = patientRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Paciente no encontrado con ID: " + id));
+                .orElseThrow(() -> new ResourceNotFoundException("Paciente no encontrado con ID: " + id));
         return patientMapper.toResponseDTO(patient);
     }
 
@@ -73,7 +75,7 @@ public class PatientService {
     @Transactional(readOnly = true)
     public PatientResponseDTO getPatientByDocument(String documentNumber) {
         Patient patient = patientRepository.findByDocumentNumber(documentNumber)
-                .orElseThrow(() -> new RuntimeException("Paciente no encontrado con documento: " + documentNumber));
+                .orElseThrow(() -> new ResourceNotFoundException("Paciente no encontrado con documento: " + documentNumber));
         return patientMapper.toResponseDTO(patient);
     }
 
@@ -92,7 +94,7 @@ public class PatientService {
      */
     public PatientResponseDTO updatePatient(Long id, PatientUpdateDTO dto) {
         Patient patient = patientRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Paciente no encontrado con ID: " + id));
+                .orElseThrow(() -> new ResourceNotFoundException("Paciente no encontrado con ID: " + id));
 
         patientMapper.updateEntityFromDTO(dto, patient);
         Patient updatedPatient = patientRepository.save(patient);
@@ -104,7 +106,7 @@ public class PatientService {
      */
     public void deactivatePatient(Long id) {
         Patient patient = patientRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Paciente no encontrado con ID: " + id));
+                .orElseThrow(() -> new ResourceNotFoundException("Paciente no encontrado con ID: " + id));
         patient.setActive(false);
         patientRepository.save(patient);
     }
@@ -114,7 +116,7 @@ public class PatientService {
      */
     public void deletePatient(Long id) {
         if (!patientRepository.existsById(id)) {
-            throw new RuntimeException("Paciente no encontrado con ID: " + id);
+            throw new ResourceNotFoundException("Paciente no encontrado con ID: " + id);
         }
         patientRepository.deleteById(id);
     }
