@@ -17,21 +17,40 @@ import com.vitalapp.vital_app_backend.dto.common.PageResponseDTO;
 import com.vitalapp.vital_app_backend.dto.patient.PatientCreateDTO;
 import com.vitalapp.vital_app_backend.dto.patient.PatientResponseDTO;
 import com.vitalapp.vital_app_backend.dto.patient.PatientUpdateDTO;
-import com.vitalapp.vital_app_backend.exception.custom.ResourceNotFoundException;
 import com.vitalapp.vital_app_backend.exception.custom.DuplicateResourceException;
+import com.vitalapp.vital_app_backend.exception.custom.ResourceNotFoundException;
 import com.vitalapp.vital_app_backend.mapper.PatientMapper;
 import com.vitalapp.vital_app_backend.model.Gender;
 import com.vitalapp.vital_app_backend.model.Patient;
 import com.vitalapp.vital_app_backend.repository.PatientRepository;
 import com.vitalapp.vital_app_backend.specification.PatientSpecification;
 
+/**
+ * Servicio de negocio para la gestión de pacientes en el sistema VitalApp.
+ *
+ * Esta clase proporciona toda la lógica de negocio relacionada con pacientes,
+ * incluyendo operaciones CRUD, búsqueda avanzada, filtrado y validaciones.
+ * Utiliza transacciones para garantizar la integridad de los datos.
+ *
+ * @author Equipo VitalApp
+ * @version 1.0.0
+ * @since 1.0.0
+ */
 @Service
 @Transactional
 public class PatientService {
 
+    /**
+     * Repositorio para acceder a los datos de pacientes en la base de datos.
+     * Inyectado automáticamente por Spring.
+     */
     @Autowired
     private PatientRepository patientRepository;
 
+    /**
+     * Mapper para convertir entre entidades Patient y DTOs.
+     * Inyectado automáticamente por Spring.
+     */
     @Autowired
     private PatientMapper patientMapper;
 

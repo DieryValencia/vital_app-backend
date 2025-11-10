@@ -12,14 +12,52 @@ import org.springframework.security.web.authentication.UsernamePasswordAuthentic
 
 import lombok.RequiredArgsConstructor;
 
+/**
+ * Configuración de seguridad para la aplicación VitalApp.
+ *
+ * Esta clase configura Spring Security para implementar autenticación JWT,
+ * protección de endpoints y políticas de autorización. Define qué endpoints
+ * son públicos (como autenticación y documentación Swagger) y cuáles requieren
+ * autenticación previa.
+ *
+ * @author Equipo VitalApp
+ * @version 1.0.0
+ * @since 1.0.0
+ */
 @Configuration
 @EnableWebSecurity
 @RequiredArgsConstructor
 public class SecurityConfig {
 
+    /**
+     * Filtro de autenticación JWT que intercepta las requests para validar tokens.
+     * Se ejecuta antes del filtro de autenticación de Spring Security.
+     */
     private final JwtAuthenticationFilter jwtAuthFilter;
+
+    /**
+     * Proveedor de autenticación que maneja la lógica de autenticación de usuarios.
+     * Utiliza el UserDetailsService y PasswordEncoder configurados.
+     */
     private final AuthenticationProvider authenticationProvider;
 
+    /**
+     * Configura la cadena de filtros de seguridad de Spring Security.
+     *
+     * Define las reglas de autorización:
+     * - Endpoints de autenticación (/api/auth/**) son públicos
+     * - Documentación Swagger es pública
+     * - Todos los demás endpoints requieren autenticación JWT
+     *
+     * También configura:
+     * - Deshabilitación de CSRF (no necesario para APIs stateless)
+     * - Gestión de sesiones stateless
+     * - Filtro JWT en la cadena de filtros
+     *
+     * @param http Configurador de HttpSecurity para personalizar la seguridad
+     * @return SecurityFilterChain configurada
+     * @throws Exception Si ocurre un error durante la configuración
+     */
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         http

@@ -23,6 +23,17 @@ import org.springframework.web.bind.annotation.*;
 import java.time.LocalDate;
 import java.util.List;
 
+/**
+ * Controlador REST para la gestión de pacientes en el sistema VitalApp.
+ *
+ * Este controlador proporciona endpoints para realizar operaciones CRUD completas
+ * sobre pacientes, incluyendo búsqueda avanzada, filtrado, paginación y ordenamiento.
+ * Todas las operaciones requieren autenticación JWT.
+ *
+ * @author Equipo VitalApp
+ * @version 1.0.0
+ * @since 1.0.0
+ */
 @RestController
 @RequestMapping("/api/patients")
 @RequiredArgsConstructor
@@ -30,6 +41,10 @@ import java.util.List;
 @SecurityRequirement(name = "Bearer Authentication")
 public class PatientController {
 
+    /**
+     * Servicio de pacientes inyectado por Spring.
+     * Maneja toda la lógica de negocio relacionada con pacientes.
+     */
     private final PatientService patientService;
 
     @Operation(
