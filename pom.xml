@@ -107,11 +107,22 @@
 			<scope>runtime</scope>
 		</dependency>
 		<!-- SpringDoc OpenAPI (Swagger) -->
-
 		<dependency>
 			<groupId>org.springdoc</groupId>
 			<artifactId>springdoc-openapi-starter-webmvc-ui</artifactId>
 			<version>2.7.0</version>
+		</dependency>
+		<!-- OpenAI Client -->
+		<dependency>
+			<groupId>com.theokanning.openai-gpt3-java</groupId>
+			<artifactId>service</artifactId>
+			<version>0.18.2</version>
+		</dependency>
+		<!-- OpenAI GPT3 Java API -->
+		<dependency>
+			<groupId>com.theokanning.openai-gpt3-java</groupId>
+			<artifactId>api</artifactId>
+			<version>0.18.2</version>
 		</dependency>
 	</dependencies>
 	
