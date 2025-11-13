@@ -195,6 +195,7 @@
 				</configuration>
 			</plugin>
 		</plugins>
+		<finalName>vital_app-backend</finalName>
 	</build>
 
 </project>
