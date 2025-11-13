@@ -2,8 +2,8 @@ package com.vitalapp.vital_app_backend.service;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Optional;
 
+import org.springframework.beans.factory.ObjectProvider;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
@@ -12,7 +12,6 @@ import com.theokanning.openai.completion.chat.ChatMessage;
 import com.theokanning.openai.completion.chat.ChatMessageRole;
 import com.theokanning.openai.service.OpenAiService;
 
-import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
 /**
@@ -27,10 +26,9 @@ import lombok.extern.slf4j.Slf4j;
  */
 @Slf4j
 @Service
-@RequiredArgsConstructor(onConstructor_ = {@org.springframework.beans.factory.annotation.Autowired(required = false)})
 public class AiAssistantService {
 
-    private final OpenAiService openaiClient;
+    private final ObjectProvider<OpenAiService> openaiClientProvider;
 
     @Value("${openai.api.model:gpt-3.5-turbo}")
     private String model;
@@ -41,8 +39,12 @@ public class AiAssistantService {
     @Value("${openai.api.max-tokens:500}")
     private Integer maxTokens;
 
+    public AiAssistantService(ObjectProvider<OpenAiService> openaiClientProvider) {
+        this.openaiClientProvider = openaiClientProvider;
+    }
+
     private boolean isConfigured() {
-        return openaiClient != null;
+        return openaiClientProvider.getIfAvailable() != null;
     }
 
     /**
@@ -73,7 +75,8 @@ public class AiAssistantService {
                     .maxTokens(maxTokens)
                     .build();
 
-            String response = openaiClient.createChatCompletion(request)
+            OpenAiService client = openaiClientProvider.getIfAvailable();
+            String response = client.createChatCompletion(request)
                     .getChoices()
                     .get(0)
                     .getMessage()
@@ -118,7 +121,8 @@ public class AiAssistantService {
                     .maxTokens(maxTokens)
                     .build();
 
-            String response = openaiClient.createChatCompletion(request)
+            OpenAiService client = openaiClientProvider.getIfAvailable();
+            String response = client.createChatCompletion(request)
                     .getChoices()
                     .get(0)
                     .getMessage()
@@ -157,7 +161,8 @@ public class AiAssistantService {
                     .maxTokens(maxTokens)
                     .build();
 
-            String response = openaiClient.createChatCompletion(request)
+            OpenAiService client = openaiClientProvider.getIfAvailable();
+            String response = client.createChatCompletion(request)
                     .getChoices()
                     .get(0)
                     .getMessage()

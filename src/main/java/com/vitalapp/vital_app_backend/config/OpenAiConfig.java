@@ -7,6 +7,8 @@ import org.springframework.context.annotation.Configuration;
 
 import com.theokanning.openai.service.OpenAiService;
 
+import lombok.extern.slf4j.Slf4j;
+
 /**
  * Configuración de OpenAI para la aplicación VitalApp.
  *
@@ -18,6 +20,7 @@ import com.theokanning.openai.service.OpenAiService;
  * @since 1.0.0
  */
 @Configuration
+@Slf4j
 public class OpenAiConfig {
 
     @Value("${openai.api.key:}")
@@ -33,9 +36,10 @@ public class OpenAiConfig {
     @ConditionalOnProperty(name = "openai.api.key")
     public OpenAiService openAiService() {
         if (openaiApiKey == null || openaiApiKey.trim().isEmpty()) {
-            throw new IllegalArgumentException("openai.api.key está vacía. " +
-                    "Establece la variable de entorno OPENAI_API_KEY o actualiza application.properties");
+            log.warn("OpenAI API key no está configurada. Características de IA serán deshabilitadas");
+            return null;
         }
+        log.info("Configurando OpenAI Service con API key");
         return new OpenAiService(openaiApiKey.trim());
     }
 }

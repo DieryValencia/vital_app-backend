@@ -71,6 +71,9 @@ public class SecurityConfig {
             .authorizeHttpRequests(auth -> auth
                 // Endpoints públicos de autenticación
                 .requestMatchers("/api/auth/**").permitAll()
+                
+                // Endpoints de IA (públicos para testing)
+                .requestMatchers("/api/ai/**").permitAll()
 
                 // Swagger UI y OpenAPI docs (públicos)
                 .requestMatchers(

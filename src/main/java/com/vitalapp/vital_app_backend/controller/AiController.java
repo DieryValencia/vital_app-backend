@@ -1,8 +1,10 @@
 package com.vitalapp.vital_app_backend.controller;
 
+import java.util.Map;
+
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -11,11 +13,8 @@ import org.springframework.web.bind.annotation.RestController;
 import com.vitalapp.vital_app_backend.service.AiAssistantService;
 
 import io.swagger.v3.oas.annotations.Operation;
-import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.extern.slf4j.Slf4j;
-
-import java.util.Map;
 
 /**
  * Controlador para operaciones de IA/OpenAI.
@@ -31,7 +30,7 @@ import java.util.Map;
 @RestController
 @RequestMapping("/api/ai")
 @Tag(name = "AI", description = "Endpoints para interacciones con OpenAI")
-@SecurityRequirement(name = "Bearer Authentication")
+@ConditionalOnProperty(name = "openai.api.key")
 public class AiController {
 
     private final AiAssistantService aiService;
@@ -47,7 +46,6 @@ public class AiController {
      * @return Análisis de síntomas de OpenAI
      */
     @PostMapping("/analyze-symptoms")
-    @PreAuthorize("hasAnyRole('PATIENT', 'DOCTOR', 'ADMIN')")
     @Operation(summary = "Analizar síntomas",
             description = "Usa OpenAI para analizar síntomas y proporcionar nivel de urgencia")
     public ResponseEntity<?> analyzeSymptoms(@RequestBody SymptomsRequest request) {
@@ -74,7 +72,6 @@ public class AiController {
      * @return Recomendación médica generada por OpenAI
      */
     @PostMapping("/generate-recommendation")
-    @PreAuthorize("hasAnyRole('PATIENT', 'DOCTOR', 'ADMIN')")
     @Operation(summary = "Generar recomendación médica",
             description = "Usa OpenAI para generar una recomendación de triaje")
     public ResponseEntity<?> generateRecommendation(
@@ -104,7 +101,6 @@ public class AiController {
      * @return Respuesta de OpenAI
      */
     @PostMapping("/chat")
-    @PreAuthorize("hasAnyRole('PATIENT', 'DOCTOR', 'ADMIN')")
     @Operation(summary = "Chat con IA",
             description = "Realiza una consulta genérica a OpenAI")
     public ResponseEntity<?> chat(@RequestBody ChatRequest request) {
