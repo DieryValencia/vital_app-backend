@@ -47,6 +47,7 @@ public class User implements UserDetails {
     @Enumerated(EnumType.STRING)
     private Role role;
 
+    @Builder.Default
     private boolean active = true;
 
     // ========== Implementación de UserDetails (REQUERIDO) ==========
