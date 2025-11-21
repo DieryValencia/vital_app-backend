@@ -70,9 +70,10 @@ public class SecurityConfig {
             .cors(cors -> {})  // Habilitar CORS
             .csrf(AbstractHttpConfigurer::disable)
             .authorizeHttpRequests(auth -> auth
-                // Endpoints públicos de autenticación
+                // Rutas públicas
+                .requestMatchers("/").permitAll()
+                .requestMatchers("/health").permitAll()
                 .requestMatchers("/api/auth/**").permitAll()
-
 
                 // Swagger UI y OpenAPI docs (públicos)
                 .requestMatchers(
@@ -82,10 +83,8 @@ public class SecurityConfig {
                     "/api-docs/**"
                 ).permitAll()
 
-                // Todos los endpoints requieren autenticación
-
-                // Notificaciones - Acceso público autenticado
-                .requestMatchers("/api/notifications/**").authenticated()
+                // Actuator (health checks)
+                .requestMatchers("/actuator/**").permitAll()
 
                 // Todos los demás endpoints requieren autenticación
                 .anyRequest().authenticated()
@@ -107,7 +106,8 @@ public class SecurityConfig {
             "http://localhost:3000",
             "http://localhost:3001",
             "http://127.0.0.1:3000",
-            "http://127.0.0.1:3001"
+            "http://127.0.0.1:3001",
+            "https://mid-dianemarie-vitalapp-a45cd570.koyeb.app"
         ));
         config.addAllowedHeader("*");
         config.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS"));
