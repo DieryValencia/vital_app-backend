@@ -31,6 +31,13 @@ public class AppointmentController {
     private final AppointmentService appointmentService;
     private final AuthorizationService authorizationService;
 
+    /**
+     * Helper method to build OK response
+     */
+    private <T> ResponseEntity<T> buildOkResponse(T data) {
+        return ResponseEntity.ok(data);
+    }
+
     @Operation(
         summary = "Obtener todas las citas",
         description = "Retorna la lista completa de citas médicas registradas en el sistema"
@@ -48,8 +55,7 @@ public class AppointmentController {
     @PreAuthorize("hasRole('USER')")
     @GetMapping
     public ResponseEntity<List<AppointmentResponseDTO>> getAllAppointments() {
-        List<AppointmentResponseDTO> appointments = appointmentService.getAllAppointments();
-        return ResponseEntity.ok(appointments);
+        return buildOkResponse(appointmentService.getAllAppointments());
     }
 
     @Operation(
@@ -76,8 +82,7 @@ public class AppointmentController {
         @Parameter(description = "ID de la cita", example = "1")
         @PathVariable Long id
     ) {
-        AppointmentResponseDTO appointment = appointmentService.getAppointmentById(id);
-        return ResponseEntity.ok(appointment);
+        return buildOkResponse(appointmentService.getAppointmentById(id));
     }
 
     @Operation(
@@ -99,8 +104,7 @@ public class AppointmentController {
         @Parameter(description = "ID del paciente", example = "1")
         @PathVariable Long patientId
     ) {
-        List<AppointmentResponseDTO> appointments = appointmentService.getAppointmentsByPatient(patientId);
-        return ResponseEntity.ok(appointments);
+        return buildOkResponse(appointmentService.getAppointmentsByPatient(patientId));
     }
 
     @Operation(
@@ -122,8 +126,7 @@ public class AppointmentController {
         @Parameter(description = "Estado de la cita", example = "SCHEDULED")
         @PathVariable AppointmentStatus status
     ) {
-        List<AppointmentResponseDTO> appointments = appointmentService.getAppointmentsByStatus(status);
-        return ResponseEntity.ok(appointments);
+        return buildOkResponse(appointmentService.getAppointmentsByStatus(status));
     }
 
     @Operation(
@@ -142,8 +145,7 @@ public class AppointmentController {
     })
     @GetMapping("/upcoming")
     public ResponseEntity<List<AppointmentResponseDTO>> getUpcomingAppointments() {
-        List<AppointmentResponseDTO> appointments = appointmentService.getUpcomingAppointments();
-        return ResponseEntity.ok(appointments);
+        return buildOkResponse(appointmentService.getUpcomingAppointments());
     }
 
     @Operation(
