@@ -25,7 +25,14 @@ import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
+import org.springframework.data.jpa.domain.Specification;
 
+import com.vitalapp.vital_app_backend.dto.common.PageResponseDTO;
 import com.vitalapp.vital_app_backend.dto.patient.PatientCreateDTO;
 import com.vitalapp.vital_app_backend.dto.patient.PatientResponseDTO;
 import com.vitalapp.vital_app_backend.dto.patient.PatientUpdateDTO;
@@ -306,6 +313,28 @@ class PatientServiceTest {
         // Then
         verify(patientRepository, times(1)).existsById(1L);
         verify(patientRepository, times(1)).deleteById(1L);
+    }
+
+    @Test
+    @DisplayName("Debe obtener todos los pacientes con paginación y filtros")
+    void getAllPatients_shouldReturnPagedPatients() {
+        // Given
+        Pageable pageable = PageRequest.of(0, 10, Sort.by(Sort.Direction.ASC, "id"));
+        Page<Patient> patientPage = new PageImpl<>(Arrays.asList(patient), pageable, 1);
+        Page<PatientResponseDTO> dtoPage = new PageImpl<>(Arrays.asList(responseDTO), pageable, 1);
+
+        when(patientRepository.findAll(any(Specification.class), any(Pageable.class))).thenReturn(patientPage);
+        when(patientMapper.toResponseDTO(any(Patient.class))).thenReturn(responseDTO);
+
+        // When
+        PageResponseDTO<PatientResponseDTO> result = patientService.getAllPatients(
+            0, 10, "id", "ASC", null, null, null, null, null, null, null
+        );
+
+        // Then
+        assertNotNull(result);
+        assertEquals(1, result.getContent().size());
+        verify(patientRepository, times(1)).findAll(any(Specification.class), any(Pageable.class));
     }
 
     @Test
