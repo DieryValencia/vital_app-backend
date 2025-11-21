@@ -74,7 +74,15 @@ public class PatientService {
     private PatientMapper patientMapper;
 
     /**
-     * Crea un nuevo paciente
+     * Crea un nuevo paciente en el sistema.
+     *
+     * Valida que no exista un paciente con el mismo número de documento,
+     * calcula la edad basada en la fecha de nacimiento y marca al paciente
+     * como activo por defecto.
+     *
+     * @param dto Datos del paciente a crear
+     * @return DTO de respuesta con la información del paciente creado
+     * @throws DuplicateResourceException si ya existe un paciente con el mismo documento
      */
     public PatientResponseDTO createPatient(PatientCreateDTO dto) {
         logger.info("Creando paciente con documento: {}", dto.getDocumentNumber());
@@ -99,7 +107,25 @@ public class PatientService {
     }
 
     /**
-     * Obtiene todos los pacientes con paginación, ordenamiento y filtros
+     * Obtiene todos los pacientes con paginación, ordenamiento y filtros.
+     *
+     * Este método permite recuperar una lista paginada de pacientes aplicando
+     * diversos filtros opcionales como nombre, documento, teléfono, género,
+     * fecha de nacimiento y estado activo. También soporta ordenamiento
+     * personalizado por cualquier campo válido.
+     *
+     * @param page Número de página (0-based)
+     * @param size Tamaño de página
+     * @param sortBy Campo por el cual ordenar
+     * @param sortDirection Dirección del ordenamiento (ASC o DESC)
+     * @param fullName Filtro por nombre completo (opcional)
+     * @param documentNumber Filtro por número de documento (opcional)
+     * @param phone Filtro por teléfono (opcional)
+     * @param gender Filtro por género (opcional)
+     * @param birthDateFrom Fecha de nacimiento desde (opcional)
+     * @param birthDateTo Fecha de nacimiento hasta (opcional)
+     * @param active Filtro por estado activo (opcional)
+     * @return Página de pacientes con metadatos de paginación
      */
     @Transactional(readOnly = true)
     public PageResponseDTO<PatientResponseDTO> getAllPatients(
