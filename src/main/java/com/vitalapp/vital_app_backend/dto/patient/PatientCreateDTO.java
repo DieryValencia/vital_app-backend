@@ -22,6 +22,7 @@ public class PatientCreateDTO {
 
     @NotBlank(message = "El nombre completo es obligatorio")
     @Size(min = 3, max = 100, message = "El nombre completo debe tener entre 3 y 100 caracteres")
+    @Pattern(regexp = "^[a-zA-Z\\s]+$", message = "El nombre completo solo puede contener letras y espacios")
     private String fullName;
 
     @NotBlank(message = "El número de documento es obligatorio")

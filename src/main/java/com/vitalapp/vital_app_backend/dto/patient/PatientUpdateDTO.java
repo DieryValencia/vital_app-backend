@@ -17,6 +17,7 @@ import lombok.NoArgsConstructor;
 public class PatientUpdateDTO {
 
     @Size(min = 3, max = 100, message = "El nombre completo debe tener entre 3 y 100 caracteres")
+    @Pattern(regexp = "^[a-zA-Z\\s]+$", message = "El nombre completo solo puede contener letras y espacios")
     private String fullName;
 
     @Past(message = "La fecha de nacimiento debe ser anterior a la fecha actual")
