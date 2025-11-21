@@ -22,6 +22,19 @@ import java.util.Map;
 @RestControllerAdvice
 public class GlobalExceptionHandler {
 
+    /**
+     * Helper method to build error response
+     */
+    private ErrorResponse buildErrorResponse(HttpStatus status, String error, String message, HttpServletRequest request) {
+        ErrorResponse response = new ErrorResponse();
+        response.setTimestamp(LocalDateTime.now());
+        response.setStatus(status.value());
+        response.setError(error);
+        response.setMessage(message);
+        response.setPath(request.getRequestURI());
+        return response;
+    }
+
     @ExceptionHandler(MethodArgumentNotValidException.class)
     public ResponseEntity<ValidationErrorResponse> handleValidationErrors(
             MethodArgumentNotValidException ex, HttpServletRequest request) {
@@ -50,14 +63,9 @@ public class GlobalExceptionHandler {
     public ResponseEntity<ErrorResponse> handleResourceNotFound(
             ResourceNotFoundException ex, HttpServletRequest request) {
 
-        ErrorResponse response = new ErrorResponse();
-        response.setTimestamp(LocalDateTime.now());
-        response.setStatus(HttpStatus.NOT_FOUND.value());
-        response.setError("Resource Not Found");
-        response.setMessage(ex.getMessage());
-        response.setPath(request.getRequestURI());
-
         log.warn("Resource not found: {}", ex.getMessage());
+
+        ErrorResponse response = buildErrorResponse(HttpStatus.NOT_FOUND, "Resource Not Found", ex.getMessage(), request);
 
         return ResponseEntity.status(HttpStatus.NOT_FOUND).body(response);
     }
@@ -66,14 +74,9 @@ public class GlobalExceptionHandler {
     public ResponseEntity<ErrorResponse> handleDuplicateResource(
             DuplicateResourceException ex, HttpServletRequest request) {
 
-        ErrorResponse response = new ErrorResponse();
-        response.setTimestamp(LocalDateTime.now());
-        response.setStatus(HttpStatus.CONFLICT.value());
-        response.setError("Duplicate Resource");
-        response.setMessage(ex.getMessage());
-        response.setPath(request.getRequestURI());
-
         log.warn("Duplicate resource: {}", ex.getMessage());
+
+        ErrorResponse response = buildErrorResponse(HttpStatus.CONFLICT, "Duplicate Resource", ex.getMessage(), request);
 
         return ResponseEntity.status(HttpStatus.CONFLICT).body(response);
     }
@@ -82,14 +85,9 @@ public class GlobalExceptionHandler {
     public ResponseEntity<ErrorResponse> handleBusinessException(
             BusinessException ex, HttpServletRequest request) {
 
-        ErrorResponse response = new ErrorResponse();
-        response.setTimestamp(LocalDateTime.now());
-        response.setStatus(HttpStatus.BAD_REQUEST.value());
-        response.setError("Business Error");
-        response.setMessage(ex.getMessage());
-        response.setPath(request.getRequestURI());
-
         log.warn("Business error: {}", ex.getMessage());
+
+        ErrorResponse response = buildErrorResponse(HttpStatus.BAD_REQUEST, "Business Error", ex.getMessage(), request);
 
         return ResponseEntity.badRequest().body(response);
     }
