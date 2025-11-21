@@ -45,6 +45,8 @@ import com.vitalapp.vital_app_backend.specification.PatientSpecification;
 @Transactional
 public class PatientService {
 
+    private static final Logger logger = LoggerFactory.getLogger(PatientService.class);
+
     /**
      * Repositorio para acceder a los datos de pacientes en la base de datos.
      * Inyectado automáticamente por Spring.
@@ -75,6 +77,8 @@ public class PatientService {
      * Crea un nuevo paciente
      */
     public PatientResponseDTO createPatient(PatientCreateDTO dto) {
+        logger.info("Creando paciente con documento: {}", dto.getDocumentNumber());
+
         if (patientRepository.existsByDocumentNumber(dto.getDocumentNumber())) {
             throw new DuplicateResourceException("Ya existe un paciente con el documento: " + dto.getDocumentNumber());
         }
@@ -85,9 +89,11 @@ public class PatientService {
         calculateAndSetAge(patient);
         patient.setActive(true);
 
-        System.out.println("💾 Guardando paciente: " + patient.getFullName() + ", Edad: " + patient.getAge());
+        logger.info("Guardando paciente: {} con edad {}", patient.getFullName(), patient.getAge());
 
         Patient savedPatient = patientRepository.save(patient);
+
+        logger.info("Paciente creado exitosamente con ID: {}", savedPatient.getId());
 
         return patientMapper.toResponseDTO(savedPatient);
     }
@@ -167,8 +173,10 @@ public class PatientService {
      */
     @Transactional(readOnly = true)
     public PatientResponseDTO getPatientById(Long id) {
+        logger.debug("Buscando paciente con ID: {}", id);
         Patient patient = patientRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Paciente no encontrado con ID: " + id));
+        logger.debug("Paciente encontrado: {}", patient.getFullName());
         return patientMapper.toResponseDTO(patient);
     }
 
@@ -196,6 +204,8 @@ public class PatientService {
      * Actualiza un paciente
      */
     public PatientResponseDTO updatePatient(Long id, PatientUpdateDTO dto) {
+        logger.info("Actualizando paciente con ID: {}", id);
+
         Patient patient = patientRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Paciente no encontrado con ID: " + id));
 
@@ -205,6 +215,7 @@ public class PatientService {
         calculateAndSetAge(patient);
 
         Patient updatedPatient = patientRepository.save(patient);
+        logger.info("Paciente actualizado exitosamente: {}", updatedPatient.getFullName());
         return patientMapper.toResponseDTO(updatedPatient);
     }
 
@@ -222,17 +233,22 @@ public class PatientService {
      * Elimina un paciente físicamente junto con sus citas y triajes asociados
      */
     public void deletePatient(Long id) {
+        logger.info("Eliminando paciente con ID: {}", id);
+
         Patient patient = patientRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Paciente no encontrado con ID: " + id));
 
         // Eliminar citas asociadas
         appointmentRepository.deleteAll(appointmentRepository.findByPatientId(id));
+        logger.debug("Citas asociadas eliminadas para paciente ID: {}", id);
 
         // Eliminar triajes asociados
         triageRepository.deleteAll(triageRepository.findByPatientId(id));
+        logger.debug("Triajes asociados eliminados para paciente ID: {}", id);
 
         // Eliminar el paciente
         patientRepository.deleteById(id);
+        logger.info("Paciente eliminado exitosamente: {}", patient.getFullName());
     }
 
     // Método auxiliar para calcular edad
