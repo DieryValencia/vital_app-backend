@@ -2,6 +2,7 @@ package com.vitalapp.vital_app_backend.config;
 
 import java.util.Arrays;
 
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.web.cors.CorsConfiguration;
@@ -11,6 +12,9 @@ import org.springframework.web.filter.CorsFilter;
 @Configuration
 public class CorsConfig {
 
+    @Value("${cors.origins:http://localhost:3000,http://localhost:5173}")
+    private String corsOrigins;
+
     @Bean
     public CorsFilter corsFilter() {
         CorsConfiguration config = new CorsConfiguration();
@@ -18,13 +22,9 @@ public class CorsConfig {
         // Permitir credenciales (cookies, headers de auth)
         config.setAllowCredentials(true);
         
-        // Permitir estos orígenes (frontend)
-        config.setAllowedOrigins(Arrays.asList(
-            "http://localhost:3000",
-            "http://localhost:3001",
-            "http://127.0.0.1:3000",
-            "http://127.0.0.1:3001"
-        ));
+        // Convertir la variable de entorno en lista
+        String[] originsArray = corsOrigins.split(",");
+        config.setAllowedOrigins(Arrays.asList(originsArray));
         
         // Permitir todos los headers
         config.addAllowedHeader("*");
