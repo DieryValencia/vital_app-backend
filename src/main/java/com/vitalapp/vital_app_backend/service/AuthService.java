@@ -7,6 +7,8 @@ import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.vitalapp.vital_app_backend.config.JwtService;
@@ -24,6 +26,8 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 public class AuthService {
 
+    private static final Logger logger = LoggerFactory.getLogger(AuthService.class);
+
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
     private final JwtService jwtService;
@@ -31,11 +35,15 @@ public class AuthService {
     private final UserDetailsService userDetailsService;
 
     public AuthResponseDTO register(RegisterRequestDTO request) {
+        logger.info("Registrando usuario: {}", request.getUsername());
+
         if (userRepository.existsByUsername(request.getUsername())) {
+            logger.warn("Username ya existe: {}", request.getUsername());
             throw new RuntimeException("El username ya está en uso");
         }
 
         if (userRepository.existsByEmail(request.getEmail())) {
+            logger.warn("Email ya existe: {}", request.getEmail());
             throw new RuntimeException("El email ya está en uso");
         }
 
@@ -46,19 +54,22 @@ public class AuthService {
                 .active(true)
                 .build();
 
-        userRepository.save(user);
+        User savedUser = userRepository.save(user);
+        logger.info("Usuario registrado con ID: {}", savedUser.getId());
 
-        UserDetails userDetails = userDetailsService.loadUserByUsername(user.getUsername());
+        UserDetails userDetails = userDetailsService.loadUserByUsername(savedUser.getUsername());
         String token = jwtService.generateToken(userDetails);
         String refreshToken = jwtService.generateRefreshToken(userDetails);
+
+        logger.info("Tokens generados para usuario: {}", savedUser.getUsername());
 
         return AuthResponseDTO.builder()
                 .token(token)
                 .refreshToken(refreshToken)
                 .type("Bearer")
-                .id(user.getId())
-                .username(user.getUsername())
-                .email(user.getEmail())
+                .id(savedUser.getId())
+                .username(savedUser.getUsername())
+                .email(savedUser.getEmail())
                 .role("USER")
                 .build();
     }
